@@ -50,7 +50,7 @@ package BaseAssets
 		
 		protected var infoBar:InfoBar;
 		
-		private var rect:Rectangle = new Rectangle(0, 0, 700, 500);
+		protected var rect:Rectangle = new Rectangle(0, 0, 700, 550);
 		
 		/*
 		 * Filtro de conversão para tons de cinza.

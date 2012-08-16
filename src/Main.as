@@ -9,6 +9,8 @@
 	import com.eclecticdesignstudio.motion.easing.Linear;
 	import fl.transitions.easing.None;
 	import fl.transitions.Tween;
+	import fl.video.FLVPlayback;
+	import fl.video.MetadataEvent;
 	import flash.display.DisplayObject;
 	import flash.display.Loader;
 	import flash.display.MovieClip;
@@ -32,36 +34,47 @@
 	 */
 	public class Main extends BaseMain
 	{
-		private var player:Object;
+		private var player:FLVPlayback;
 		private var loader:Loader = new Loader();
+		
+		private var respostas:Object = new Object();
+		private var camadasTexto:Vector.<MovieClip> = new Vector.<MovieClip>();
+		private var currentTela:MovieClip;
 		
 		override protected function init():void 
 		{
-			// This will hold the API player instance once it is initialized.
-			loader.contentLoaderInfo.addEventListener(Event.INIT, onLoaderInit);
-			//loader.load(new URLRequest("http://www.youtube.com/apiplayer?version=3"));
-			loader.load(new URLRequest("http://www.youtube.com/v/UaWGd5VFkAQ"));
+			criaConexoes();
+			
+			player.source = "http://cepa.if.usp.br/ivan/teste_streaming/Teste.flv";
+			player.addEventListener(MetadataEvent.CUE_POINT, cuePointListener);
 		}
 		
-		function onLoaderInit(event:Event):void {
-			addChild(loader);
-			loader.x = 20;
-			loader.y = 20;
-			loader.content.addEventListener("onReady", onPlayerReady);
-			loader.content.addEventListener("onError", onPlayerError);
-			loader.content.addEventListener("onStateChange", onPlayerStateChange);
-			loader.content.addEventListener("onPlaybackQualityChange", onVideoPlaybackQualityChange);
+		private function criaConexoes():void 
+		{
+			player = _player;
+			layerAtividade.addChild(player);
 		}
-
-		function onPlayerReady(event:Event):void {
-			// Event.data contains the event parameter, which is the Player API ID 
-			trace("player ready:", Object(event).data);
-
-			// Once this event has been dispatched by the player, we can use
-			// cueVideoById, loadVideoById, cueVideoByUrl and loadVideoByUrl
-			// to load a particular YouTube video.
-			player = loader.content;
-			//player.loadVideoByUrl("http://www.youtube.com/v/UaWGd5VFkAQ", 0);
+		
+		private function cuePointListener(e:MetadataEvent):void 
+		{
+			player.pause();
+			
+			var nCue:int = int(e.info.parameters.teste);
+			//var nCue:int = int(e.info.name);
+			
+			var classe:Class = Class(getDefinitionByName("CamadaTexto" + String(nCue)));
+			currentTela = new classe();
+			currentTela.x = rect.width / 2;
+			currentTela.y = rect.height / 2;
+			layerAtividade.addChild(currentTela);
+			
+			//Actuate.timer(2).onComplete(playAgain);
+		}
+		
+		private function playAgain():void 
+		{
+			//player.playVideo();
+			player.play();
 		}
 
 		function onPlayerError(event:Event):void {
