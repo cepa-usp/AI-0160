@@ -122,7 +122,6 @@
 			}
 			
 			if (!hasPosition) {
-				trace("entrou");
 				var cuePoint:CuePointMarker = new CuePointMarker();
 				cuePoint.x = posX;
 				cuePoint.y = posYMark;
@@ -131,7 +130,6 @@
 			}
 			
 			telaAtual = int(e.info.parameters.teste);
-			//var nCue:int = int(e.info.name);
 			
 			var classe:Class = Class(getDefinitionByName("CamadaTexto" + String(telaAtual)));
 			currentTela = new classe();
@@ -139,8 +137,6 @@
 			currentTela.y = rect.height / 2;
 			layerAtividade.addChild(currentTela);
 			recuepraTela(currentTela);
-			
-			//Actuate.timer(2).onComplete(playAgain);
 		}
 		
 		private function recuepraTela(tela:MovieClip):void 
@@ -165,21 +161,6 @@
 			layerAtividade.removeChild(currentTela);
 			currentTela = null;
 			player.play();
-		}
-
-		function onPlayerError(event:Event):void {
-			// Event.data contains the event parameter, which is the error code
-			trace("player error:", Object(event).data);
-		}
-
-		function onPlayerStateChange(event:Event):void {
-			// Event.data contains the event parameter, which is the new player state
-			trace("player state:", Object(event).data);
-		}
-
-		function onVideoPlaybackQualityChange(event:Event):void {
-			// Event.data contains the event parameter, which is the new video quality
-			trace("video quality:", Object(event).data);
 		}
 		
 		override public function reset(e:MouseEvent = null):void
