@@ -1,4 +1,4 @@
-package BaseAssets
+﻿package BaseAssets
 {
 	import BaseAssets.components.InfoBar;
 	import BaseAssets.components.MenuBar;
