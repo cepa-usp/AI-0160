@@ -50,7 +50,7 @@ package BaseAssets
 		
 		protected var infoBar:InfoBar;
 		
-		protected var rect:Rectangle = new Rectangle(0, 0, 700, 550);
+		protected var rect:Rectangle = new Rectangle(0, 0, 700, 600);
 		
 		/*
 		 * Filtro de conversão para tons de cinza.
@@ -156,7 +156,7 @@ package BaseAssets
 				layerDialogo.addChild(statsScreen);
 			}
 			
-			botoes = new MenuBar();
+			botoes = new MenuBar(false);
 			//botoes.x = rect.width - botoes.BTN_WIDTH - 12;
 			botoes.y = rect.height - 12;
 			layerMenu.addChild(botoes);

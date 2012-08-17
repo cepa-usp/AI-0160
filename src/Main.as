@@ -16,6 +16,7 @@
 	import flash.display.MovieClip;
 	import flash.display.Sprite;
 	import flash.events.Event;
+	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
 	import flash.events.TimerEvent;
 	import flash.external.ExternalInterface;
@@ -37,43 +38,132 @@
 		private var player:FLVPlayback;
 		private var loader:Loader = new Loader();
 		
-		private var respostas:Object = new Object();
+		private var respostas:Object;
 		private var camadasTexto:Vector.<MovieClip> = new Vector.<MovieClip>();
 		private var currentTela:MovieClip;
+		private var nCamadas:int = 11;
+		private var telaAtual:int;
 		
 		override protected function init():void 
 		{
 			criaConexoes();
+			criaRespostas();
+			stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
+			
+			block.visible = false;
+			continua.visible = false;
+			continua.addEventListener(MouseEvent.CLICK, playAgain);
 			
 			player.source = "http://cepa.if.usp.br/ivan/teste_streaming/Teste.flv";
+			player.playWhenEnoughDownloaded();
 			player.addEventListener(MetadataEvent.CUE_POINT, cuePointListener);
+			
+			stage.addEventListener(MouseEvent.CLICK, clickTrace);
+		}
+		
+		private function clickTrace(e:MouseEvent):void 
+		{
+			
 		}
 		
 		private function criaConexoes():void 
 		{
 			player = _player;
 			layerAtividade.addChild(player);
+			layerAtividade.addChild(block);
 		}
 		
+		private function criaRespostas():void 
+		{
+			respostas = new Object();
+			
+			for (var i:int = 1; i <= nCamadas; i++) 
+			{
+				respostas[String(i)] = new Object();
+				respostas[String(i)].caixasTexto = [];
+				respostas[String(i)].textos = [];
+			}
+		}
+		
+		private function keyUpHandler(e:KeyboardEvent):void 
+		{
+			if (e.target.name == "texto") {
+				var posTela:int = int(e.target.parent.name.replace("m", ""));
+				
+				var caixas:Array = respostas[telaAtual].caixasTexto;
+				var textos:Array = respostas[telaAtual].textos;
+				var index:int = caixas.indexOf(e.target.parent.name);
+				if (index == -1) {
+					caixas.push(e.target.parent.name);
+					textos.push(e.target.text);
+				}else {
+					textos[index] = e.target.text;
+				}
+			}
+		}
+		
+		private var posYMark:Number = 525;
+		private var cuePoints:Array = [];
 		private function cuePointListener(e:MetadataEvent):void 
 		{
 			player.pause();
+			continua.visible = true;
+			block.visible = true;
 			
-			var nCue:int = int(e.info.parameters.teste);
+			var posX:Number = player.x + player.seekBar.x + (player.playheadPercentage / 100 * player.seekBar.width);
+			var hasPosition:Boolean = false;
+			
+			lookPos: for each (var item:DisplayObject in cuePoints) 
+			{
+				if (Math.abs(item.x - posX) < 2) {
+					hasPosition = true; 
+					break lookPos;
+				}
+			}
+			
+			if (!hasPosition) {
+				trace("entrou");
+				var cuePoint:CuePointMarker = new CuePointMarker();
+				cuePoint.x = posX;
+				cuePoint.y = posYMark;
+				cuePoints.push(cuePoint);
+				layerAtividade.addChild(cuePoint);
+			}
+			
+			telaAtual = int(e.info.parameters.teste);
 			//var nCue:int = int(e.info.name);
 			
-			var classe:Class = Class(getDefinitionByName("CamadaTexto" + String(nCue)));
+			var classe:Class = Class(getDefinitionByName("CamadaTexto" + String(telaAtual)));
 			currentTela = new classe();
 			currentTela.x = rect.width / 2;
 			currentTela.y = rect.height / 2;
 			layerAtividade.addChild(currentTela);
+			recuepraTela(currentTela);
 			
 			//Actuate.timer(2).onComplete(playAgain);
 		}
 		
-		private function playAgain():void 
+		private function recuepraTela(tela:MovieClip):void 
+		{
+			if (respostas[telaAtual].caixasTexto.length > 0) {
+				var caixas:Array = respostas[telaAtual].caixasTexto;
+				var textos:Array = respostas[telaAtual].textos;
+				
+				for (var i:int = 0; i < caixas.length; i++) 
+				{
+					currentTela[caixas[i]].texto.text = textos[i];
+				}
+			}
+			
+		}
+		
+		private function playAgain(e:MouseEvent):void 
 		{
 			//player.playVideo();
+			continua.visible = false;
+			block.visible = false;
+			layerAtividade.removeChild(currentTela);
+			currentTela = null;
 			player.play();
 		}
 
