@@ -149,6 +149,12 @@
 		
 		private var posYMark:Number = 516;
 		private var cuePoints:Array = [];
+		
+		
+		/**
+		 * Função que recebe os eventos de cue points
+		 * @param	e
+		 */
 		private function cuePointListener(e:MetadataEvent):void 
 		{
 			if (cuePointsStop.selected == false) return;
