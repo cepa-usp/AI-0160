@@ -5,6 +5,8 @@ package
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
+	import flash.utils.Dictionary;
+	import memorphic.xpath.XPathQuery;
 	
 	/**
 	 * ...
@@ -13,6 +15,7 @@ package
 	
 	public class ListaOpcoes extends Sprite 
 	{		
+		private var _conteudo:Conteudo = null;
 		private var _posicao:int = POS_ESQUERDA;
 		private var _largura:int = 200;
 		private var _altura:int = 400;
@@ -20,11 +23,14 @@ package
 		private var _opcoes:Vector.<Opcao> = new Vector.<Opcao>();
 		private var layerOpcoes:Sprite = new Sprite();
 		private var layerBorder:Sprite = new Sprite();
+		private var dicOpcoes:Dictionary = new Dictionary();
 		private var exibindo:Boolean = false;
 		private var destino:Sprite;
 		
 		public static const POS_ESQUERDA:int = 0;
 		public static const POS_DIREITA:int = 1;
+		public static var listaOpcaoAtiva:ListaOpcoes = null;
+		public static var listaOpcaoProxima:ListaOpcoes = null;
 		
 		
 		public function fazMascara():void {
@@ -35,14 +41,31 @@ package
 			layerOpcoes.mask = mascara;
 		}
 		
-		public function ListaOpcoes() 
+		public function ListaOpcoes(conteudoXML:Conteudo) 
 		{
+			this.conteudo = conteudoXML;
 			fazMascara();
 			addChild(layerOpcoes);
 			addChild(layerBorder);
 			addChild(mascara);
 			layerBorder.graphics.drawRect(0, 0, largura, 1)
 			this.addEventListener(Event.ADDED, onAdded);
+			
+		}
+		
+		public function definirConteudo(xpathquery:String, attr:String=null):void {
+			dicOpcoes = new Dictionary();
+			var query:XPathQuery = new XPathQuery(xpathquery);
+			var result:XMLList = query.exec(conteudo.conteudo)
+			for each (var r:XML in result) {
+				if (attr == "") {
+					adicionarOpcao(r[0]);
+				} else {
+					adicionarOpcao(r.attribute(attr))
+				}
+				
+			}
+			//trace(result)
 			
 		}
 		
@@ -69,8 +92,13 @@ package
 		
 	
 		public function adicionarOpcao(tx:String):Opcao {
+			if (dicOpcoes[tx] != null) {
+				Opcao(dicOpcoes[tx]).qtde++;
+				return Opcao(dicOpcoes[tx]);
+			}
 			var o:Opcao = new Opcao(this, tx);
 			var pos:int = 0;
+			dicOpcoes[tx] = o;
 			for each (var opt:Opcao in opcoes) pos += opt.height;
 			opcoes.push(o);
 			layerOpcoes.addChild(o);
@@ -120,21 +148,50 @@ package
 			_altura = value;
 		}
 		
+		public function get conteudo():Conteudo 
+		{
+			return _conteudo;
+		}
+		
+		public function set conteudo(value:Conteudo):void 
+		{
+			_conteudo = value;
+		}
+		
 
 		
-		public function show():void {			
+		public function show():void {
+				//if (listaOpcaoAtiva == this) return;	
+				if (ListaOpcoes.listaOpcaoAtiva!=null) {
+					ListaOpcoes.listaOpcaoProxima = this;
+					ListaOpcoes.listaOpcaoAtiva.hide();
+					return;
+					
+				}
+				
 				if (_posicao == POS_DIREITA) {
 					this.x = stage.stageWidth + 10;					
 				} else {
 					this.x = 0 - this.largura - 10;
 				}
 				var xx:int = (posicao == POS_DIREITA?this.stage.stageWidth - this.largura:0);
-				Actuate.tween(this, 0.5, {x:xx})
+				Actuate.tween(this, 0.5, { x:xx } ).onComplete(setThisActive);
+		}
+		
+		private function setThisActive():void 
+		{
+			ListaOpcoes.listaOpcaoAtiva = this;
 		}
 		
 		public function hide():void {
 				var xx:int = (posicao == POS_DIREITA?stage.stageWidth + 10:this.largura - 10);		
-				Actuate.tween(this, 0.5, {x:xx})
+				Actuate.tween(this, 0.5, { x:xx } ).onComplete(afterHideThis);
+		}
+		
+		private function afterHideThis():void 
+		{
+			if (ListaOpcoes.listaOpcaoAtiva == this) ListaOpcoes.listaOpcaoAtiva = null;
+			if (ListaOpcoes.listaOpcaoProxima != null) ListaOpcoes.listaOpcaoProxima.show();			
 		}
 		
 

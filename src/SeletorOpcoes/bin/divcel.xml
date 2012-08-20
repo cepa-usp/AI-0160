@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<data>
+	<etapa id="meiose">
+		<fase nome="Intérfase">
+			<dna>4c</dna>
+			<label>Duplicação do DNA</label>
+		</fase>
+		<fase nome="Prófase I e aqui a palavra vai ficar enorme">
+			<dna>4c</dna>
+			<label>Desaparecimento da carioteca</label>
+			<label>Pareamento dos cromossomos homólogos</label>
+		</fase>
+		<fase nome="Metáfase I">
+			<dna>4c</dna>
+			<label>Alinhamento dos cromossomos no centro da célula</label>
+			<label>Ligação do fuso nos centrômeros dos cromossomos</label>
+		</fase>
+		<fase nome="Anáfase I">
+			<dna>4c</dna>
+			<label>Separação dos cromossomos homólogos</label>
+		</fase>
+		<fase nome="Telófase I">
+			<dna>2c</dna>
+			<label>Reaparecimento da carioteca</label>		
+			<label>Citocinese</label>		
+		</fase>			
+		<fase nome="Prófase II">
+			<dna>2c</dna>
+			<label>Desaparecimento da carioteca</label>		
+			<label>Pareamento dos crmossomos homólogos</label>					
+		</fase>
+		<fase nome="Metáfase II">
+			<dna>2c</dna>
+			<label>Alinhamento dos cromossomos no centro da célula</label>		
+			<label>Ligação do fuso nos centrômeros dos cromossomos</label>					
+		</fase>
+		<fase nome="Anáfase II">
+			<dna>2c</dna>
+			<label>Separação das cromátides-irmãs</label>
+		</fase>
+		<fase nome="Telófase II">
+			<dna>c</dna>
+			<label>Reaparecimento da carioteca</label>			
+			<label>Citocinese</label>						
+		</fase>
+	</etapa>
+	<etapa id="mitose">
+		<fase nome="Intérfase">
+			<dna>4c</dna>
+			<label>Duplicação do DNA</label>
+		</fase>
+		<fase nome="Prófase">
+			<dna>4c</dna>
+			<label>Desaparecimento da carioteca</label>
+			<label>Pareamento dos cromossomos homólogos</label>
+		</fase>
+		<fase nome="Metáfase">
+			<dna>4c</dna>
+			<label>Alinhamento dos cromossomos no centro da célula</label>
+			<label>Ligação do fuso nos centrômeros dos cromossomos</label>
+		</fase>
+		<fase nome="Anáfase">
+			<dna>4c</dna>
+			<label>Separação das cromátides-irmãs</label>
+		</fase>
+		<fase nome="Telófase">
+			<dna>2c</dna>
+			<label>Reaparecimento da carioteca</label>		
+			<label>Citocinese</label>		
+		</fase>
+	</etapa>
+</data>

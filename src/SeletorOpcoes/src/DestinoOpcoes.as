@@ -1,7 +1,13 @@
 package  
 {
+	import com.eclecticdesignstudio.motion.actuators.SimpleActuator;
+	import flash.display.DisplayObject;
 	import flash.display.Sprite;
 	import flash.events.MouseEvent;
+	import flash.text.Font;
+	import flash.text.TextFormat;
+	import flash.utils.Dictionary;
+	import memorphic.xpath.XPathQuery;
 	/**
 	 * ...
 	 * @author Arthur
@@ -12,7 +18,9 @@ package
 		private var _largura:int = 200;
 		private var _foco:Boolean = false;
 		private var _listaOpcoes:ListaOpcoes;
-		private var qtMaxOpcoes:int = 3;
+		private var _txformat:TextFormat = null;
+		private var qtMaxOpcoes:int = 0;
+		private var dicValidos:Dictionary = new Dictionary();
 		private var _opcoes:Vector.<DestinoItem> = new Vector.<DestinoItem>();
 		public function DestinoOpcoes(listaOpcoes:ListaOpcoes) 
 		{
@@ -22,10 +30,56 @@ package
 			draw();
 		}
 		
+		public function definirEscopoValido(xpath:String, attr:String = ""):void {
+			var query:XPathQuery = new XPathQuery(xpath);
+			var result:XMLList = query.exec(listaOpcoes.conteudo.conteudo)
+			qtMaxOpcoes = 0;
+			dicValidos = new Dictionary();
+			for each (var r:XML in result) {
+				if (attr == "") {
+					adicionarValido(r[0]);
+				} else {
+					adicionarValido(r.attribute(attr))
+				}
+				
+			}			
+		}
+		
+		private function adicionarValido(text:String):void 
+		{
+			dicValidos[text] = false;
+			qtMaxOpcoes++;
+		}
+		
+		public function avaliar():int {
+			var qtCorretas:int = 0; 
+			for each (var o:Opcao in opcoes) {
+				if (dicValidos[o.texto] == true) {
+					qtCorretas++;
+				} 
+			}
+			return qtCorretas;
+		}
+		
 		private function draw():void {
 			this.graphics.clear();
 			this.graphics.beginFill(0xFFFF00, 0.6);
-			this.graphics.drawRect(0, 0, largura, Math.max(minAltura, this.height));
+			
+			if (foco) {
+				this.graphics.lineStyle(2, 0x800000, 0.9);	
+			} else {
+				this.graphics.lineStyle(2, 0xFF8000, 0.6);					
+			}
+			this.graphics.drawRoundRect(0, 0, largura, Math.max(minAltura, this.height), 10, 10);
+			
+		}
+		
+
+		
+		public function removeItem(item:DestinoItem):void {
+			opcoes.splice(opcoes.indexOf(item), 1);
+			item.opcao.selecionado = false;
+			refreshItems();
 		}
 		
 		private function onOpcaoSelecionada(e:ListaOpcoesEvent):void 
@@ -40,18 +94,28 @@ package
 				opcao.selecionado = false;
 				return;
 			}
-			var op:DestinoItem = new DestinoItem(opcao);
-			var pos:int = 0;
-			for each (var i:DestinoItem in opcoes) pos += 30;			
+			var op:DestinoItem = new DestinoItem(opcao, this);
+			op.largura = largura;
 			opcoes.push(op);
-			addChild(op);
-			op.y = pos;
-			draw();
+			refreshItems();
+			
+			
 		}
 		
+		public function refreshItems():void {
+			for (var i:int = numChildren - 1; i >= 0; i--) removeChildAt(i);
+			var pos:int = 0;			
+			for each (var op:DestinoItem in opcoes) {				
+				addChild(op);
+				op.y = pos;
+				pos += op.altura;				
+			}
+			draw();
+		}		
 		public function onClick(e:MouseEvent):void {
-			if (this.foco) return;
+			//if (this.foco) return;
 			this.setFoco();
+			if (ListaOpcoes.listaOpcaoAtiva == listaOpcoes) return;
 			listaOpcoes.show();
 			
 		}
@@ -101,12 +165,34 @@ package
 			_opcoes = value;
 		}
 		
+		public function get txformat():TextFormat 
+		{
+			return _txformat;
+		}
+		
+		public function set txformat(value:TextFormat):void 
+		{
+			_txformat = value;
+		}
+		
 
 		public function setFoco():void 
 		{
+			if (this.parent != null) {
+				for (var i:int = 0; i < parent.numChildren; i++) {
+					if (parent.getChildAt(i) is DestinoOpcoes) {
+						DestinoOpcoes(parent.getChildAt(i)).removeFoco();
+					}
+				}
+			}
 			_foco = true;
+			draw()
 		}
 		
+		public function removeFoco():void {
+			_foco = false;
+			draw()
+		}
 	}
 
 }

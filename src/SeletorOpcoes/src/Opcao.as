@@ -18,6 +18,8 @@ package
 		private var _tx:TextField = new TextField();
 		private var margem:int = 5;
 		private var _texto:String;
+		private var _qtde:int = 0;
+		private var _qtdeUsada:int = 0;
 		private var _selecionado:Boolean = false;
 		private var _lyrbg:Sprite = new Sprite();
 		
@@ -30,19 +32,27 @@ package
 			
 			tx.selectable = false;
 			tx.width = listaOpcoes.largura - 2 * margem;
+			tx.multiline = true;
+			tx.wordWrap = true;
+			tx.border = true;
+			tx.borderColor = 0x00FF00;
+			tx.x = margem;
 			tx.text = texto;
 			addChild(lyrbg);
 			addChild(tx);
-			
-			tx.x = margem;
-			tx.y = margem;
+			setTextBreak(tx);
 			tx.height = tx.textHeight + 8;
+			
 			drawbg();
 			addEventListener(MouseEvent.MOUSE_OVER, onMouseOver);
 			addEventListener(MouseEvent.MOUSE_OUT, onMouseOut);
 			addEventListener(MouseEvent.CLICK, onClick);
 			
 		}
+		
+		private function setTextBreak(txf:TextField):void {
+			
+		};
 		
 		private function onClick(e:MouseEvent):void 
 		{
@@ -65,7 +75,7 @@ package
 		
 		public function drawbg():void {
 			lyrbg.graphics.clear();
-			lyrbg.graphics.beginFill(0x000040, 0.7);
+			lyrbg.graphics.beginFill(0xC7DCE7, 0.8);
 			lyrbg.graphics.lineStyle(1, 0xFF0000, 0.9);
 			lyrbg.graphics.drawRect(0, 0, listaOpcoes.largura, tx.textHeight + 2 * margem);
 			
@@ -116,6 +126,26 @@ package
 		public function set tx(value:TextField):void 
 		{
 			_tx = value;
+		}
+		
+		public function get qtde():int 
+		{
+			return _qtde;
+		}
+		
+		public function set qtde(value:int):void 
+		{
+			_qtde = value;
+		}
+		
+		public function get qtdeUsada():int 
+		{
+			return _qtdeUsada;
+		}
+		
+		public function set qtdeUsada(value:int):void 
+		{
+			_qtdeUsada = value;
 		}
 		
 	}
