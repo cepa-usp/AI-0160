@@ -11,6 +11,7 @@
 	import fl.transitions.Tween;
 	import fl.video.FLVPlayback;
 	import fl.video.MetadataEvent;
+	import fl.video.VideoEvent;
 	import flash.display.DisplayObject;
 	import flash.display.Loader;
 	import flash.display.MovieClip;
@@ -41,7 +42,7 @@
 		private var respostas:Object;
 		private var camadasTexto:Vector.<MovieClip> = new Vector.<MovieClip>();
 		private var currentTela:MovieClip;
-		private var nCamadas:int = 11;
+		private var nCamadas:int = 8;
 		private var telaAtual:int;
 		
 		override protected function init():void 
@@ -50,20 +51,18 @@
 			criaRespostas();
 			stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
 			
+			continua.mouseEnabled = false;
+			continua.filters = [GRAYSCALE_FILTER];
 			block.visible = false;
-			continua.visible = false;
 			continua.addEventListener(MouseEvent.CLICK, playAgain);
 			
-			player.source = "http://cepa.if.usp.br/ivan/teste_streaming/Teste.flv";
+			//player.source = "http://cepa.if.usp.br/ivan/teste_streaming/Teste.flv";
+			player.source = "http://repz.kinghost.net/testes/Teste4.flv";
 			player.playWhenEnoughDownloaded();
 			player.addEventListener(MetadataEvent.CUE_POINT, cuePointListener);
+			//player.addEventListener(VideoEvent.BUFFERING_STATE_ENTERED, testeCue);
 			
-			stage.addEventListener(MouseEvent.CLICK, clickTrace);
-		}
-		
-		private function clickTrace(e:MouseEvent):void 
-		{
-			
+			Actuate.timer(1).onComplete(testeCue);
 		}
 		
 		private function criaConexoes():void 
@@ -85,6 +84,52 @@
 			}
 		}
 		
+		private function testeCue(e:VideoEvent = null):void 
+		{
+			var obj:Object;
+			var time:Number;
+			var totalTime:Number = player.totalTime;
+			var posX:Number;
+			
+			for (var i:int = 1; i <= nCamadas; i++) 
+			{
+				obj = player.findCuePoint( { name:String(i) } );
+				time = obj.time;
+				
+				posX = player.x + player.seekBar.x + (time / totalTime * player.seekBar.width);
+				
+				var cuePoint:CuePointMarker = new CuePointMarker();
+				cuePoint.x = posX;
+				cuePoint.y = posYMark;
+				cuePoint.addEventListener(MouseEvent.CLICK, cuePointClick);
+				cuePoint.buttonMode = true;
+				cuePoints.push(cuePoint);
+				layerAtividade.addChild(cuePoint);
+			}
+		}
+		
+		private function cuePointClick(e:MouseEvent):void 
+		{
+			var cP:CuePointMarker = CuePointMarker(e.target);
+			telaAtual = cuePoints.indexOf(cP) + 1;
+			var obj:Object = player.findCuePoint( { name:String(telaAtual) } );
+			
+			player.seek(obj.time);
+			if(cuePointsStop.selected){
+				player.pause();
+				
+				selecionaTela(telaAtual);
+			}else {
+				if (currentTela != null) {
+					layerAtividade.removeChild(currentTela);
+					currentTela = null;
+					continua.mouseEnabled = false;
+					continua.filters = [GRAYSCALE_FILTER];
+					block.visible = false;
+				}
+			}
+		}
+		
 		private function keyUpHandler(e:KeyboardEvent):void 
 		{
 			if (e.target.name == "texto") {
@@ -102,40 +147,35 @@
 			}
 		}
 		
-		private var posYMark:Number = 525;
+		private var posYMark:Number = 516;
 		private var cuePoints:Array = [];
 		private function cuePointListener(e:MetadataEvent):void 
 		{
+			if (cuePointsStop.selected == false) return;
+			
+			player.seek(e.info.time);
 			player.pause();
-			continua.visible = true;
+			telaAtual = int(e.info.name);
+			
+			selecionaTela(telaAtual);
+		}
+		
+		private function selecionaTela(telaAtual:int):void 
+		{
+			if (currentTela != null) {
+				layerAtividade.removeChild(currentTela);
+				currentTela = null;
+			}
+			
 			block.visible = true;
-			
-			var posX:Number = player.x + player.seekBar.x + (player.playheadPercentage / 100 * player.seekBar.width);
-			var hasPosition:Boolean = false;
-			
-			lookPos: for each (var item:DisplayObject in cuePoints) 
-			{
-				if (Math.abs(item.x - posX) < 2) {
-					hasPosition = true; 
-					break lookPos;
-				}
-			}
-			
-			if (!hasPosition) {
-				var cuePoint:CuePointMarker = new CuePointMarker();
-				cuePoint.x = posX;
-				cuePoint.y = posYMark;
-				cuePoints.push(cuePoint);
-				layerAtividade.addChild(cuePoint);
-			}
-			
-			telaAtual = int(e.info.parameters.teste);
-			
+			continua.mouseEnabled = true;
+			continua.filters = [];
 			var classe:Class = Class(getDefinitionByName("CamadaTexto" + String(telaAtual)));
 			currentTela = new classe();
 			currentTela.x = rect.width / 2;
 			currentTela.y = rect.height / 2;
 			layerAtividade.addChild(currentTela);
+			
 			recuepraTela(currentTela);
 		}
 		
@@ -155,12 +195,19 @@
 		
 		private function playAgain(e:MouseEvent):void 
 		{
-			//player.playVideo();
-			continua.visible = false;
+			if (respostaCerta()) cuePoints[telaAtual - 1].gotoAndStop(2);
+			else cuePoints[currentTela].gotoAndStop(1);
 			block.visible = false;
+			continua.mouseEnabled = false;
+			continua.filters = [GRAYSCALE_FILTER];
 			layerAtividade.removeChild(currentTela);
 			currentTela = null;
 			player.play();
+		}
+		
+		private function respostaCerta():Boolean 
+		{
+			return true;
 		}
 		
 		override public function reset(e:MouseEvent = null):void
