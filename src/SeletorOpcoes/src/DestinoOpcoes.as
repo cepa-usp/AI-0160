@@ -14,7 +14,9 @@ package
 	 */
 	public class DestinoOpcoes extends Sprite
 	{
-		private var _minAltura:int = 20;
+		private static var idcount:int = 0;
+		private var _minAltura:int = 20;		
+		private var _id:int;
 		private var _largura:int = 200;
 		private var _foco:Boolean = false;
 		private var _listaOpcoes:ListaOpcoes;
@@ -22,13 +24,21 @@ package
 		private var qtMaxOpcoes:int = 0;
 		private var dicValidos:Dictionary = new Dictionary();
 		private var _opcoes:Vector.<DestinoItem> = new Vector.<DestinoItem>();
+		
 		public function DestinoOpcoes(listaOpcoes:ListaOpcoes) 
 		{
 			this.listaOpcoes = listaOpcoes;
+			this.id = DestinoOpcoes.getNewId();
 			listaOpcoes.addEventListener(ListaOpcoesEvent.OPCAO_SELECIONADA, onOpcaoSelecionada);
 			addEventListener(MouseEvent.CLICK, onClick);
 			draw();
 		}
+		
+		public static function getNewId():int {
+			idcount++;
+			return idcount;
+		}
+		
 		
 		public function definirEscopoValido(xpath:String, attr:String = ""):void {
 			var query:XPathQuery = new XPathQuery(xpath);
@@ -74,11 +84,33 @@ package
 			
 		}
 		
+		public function loadData(o:Object):void {
+			this.id = o.id;
+			this.opcoes  = new Vector.<DestinoItem>();
+			for (var i:int = 0; i < o.qtOpcoes; i++) {
+				var opd:Object = o.opcoes[i.toString()];
+				adicionarOpcao(opd.texto);
+			}
+		}
+		
+		public function saveData():Object {
+			var destino:Object = new Object();
+			destino.id = this.id;
+			destino.qtOpcoes = opcoes.length;
+			var op:Object = new Object();
+			var q:int = 0;
+			for each (var o:DestinoItem in this.opcoes) {
+				op[q.toString()] = o.opcao.getSerialData();
+			}
+			destino.opcoes = op;
+			return destino;
+		}
 
 		
 		public function removeItem(item:DestinoItem):void {
 			opcoes.splice(opcoes.indexOf(item), 1);
 			item.opcao.selecionado = false;
+			item.opcao.qtdeUsada--;
 			refreshItems();
 		}
 		
@@ -89,12 +121,15 @@ package
 		}
 		
 		private function adicionarOpcao(opcao:Opcao):void 
-		{
+		{			
+			
 			if (qtMaxOpcoes <= opcoes.length) {
 				opcao.selecionado = false;
+				opcao.qtdeUsada--;
 				return;
 			}
 			var op:DestinoItem = new DestinoItem(opcao, this);
+			if (txformat != null) op.setTextFormat(txformat);
 			op.largura = largura;
 			opcoes.push(op);
 			refreshItems();
@@ -173,6 +208,19 @@ package
 		public function set txformat(value:TextFormat):void 
 		{
 			_txformat = value;
+			for each(var o:DestinoItem in opcoes) {
+				o.setTextFormat(value);
+			}
+		}
+		
+		public function get id():int 
+		{
+			return _id;
+		}
+		
+		public function set id(value:int):void 
+		{
+			_id = value;
 		}
 		
 

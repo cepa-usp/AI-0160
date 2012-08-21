@@ -5,7 +5,7 @@
 			<dna>4c</dna>
 			<label>Duplicação do DNA</label>
 		</fase>
-		<fase nome="Prófase I e aqui a palavra vai ficar enorme">
+		<fase nome="Prófase I">
 			<dna>4c</dna>
 			<label>Desaparecimento da carioteca</label>
 			<label>Pareamento dos cromossomos homólogos</label>

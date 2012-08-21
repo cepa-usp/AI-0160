@@ -18,7 +18,7 @@ package
 		private var _conteudo:Conteudo = null;
 		private var _posicao:int = POS_ESQUERDA;
 		private var _largura:int = 200;
-		private var _altura:int = 400;
+		private var _altura:int = 600;
 		private var mascara:Sprite = new Sprite();
 		private var _opcoes:Vector.<Opcao> = new Vector.<Opcao>();
 		private var layerOpcoes:Sprite = new Sprite();
@@ -49,8 +49,7 @@ package
 			addChild(layerBorder);
 			addChild(mascara);
 			layerBorder.graphics.drawRect(0, 0, largura, 1)
-			this.addEventListener(Event.ADDED, onAdded);
-			
+			this.addEventListener(Event.ADDED, onAdded);			
 		}
 		
 		public function definirConteudo(xpathquery:String, attr:String=null):void {
@@ -71,6 +70,7 @@ package
 		
 		private function onAdded(e:Event):void 
 		{
+			
 			this.x = 0 - this.largura;
 			return;
 			if (e.target == this) {
@@ -95,8 +95,10 @@ package
 			if (dicOpcoes[tx] != null) {
 				Opcao(dicOpcoes[tx]).qtde++;
 				return Opcao(dicOpcoes[tx]);
-			}
+			}			
 			var o:Opcao = new Opcao(this, tx);
+			o.qtde = 1;
+			o.qtdeUsada = 0;
 			var pos:int = 0;
 			dicOpcoes[tx] = o;
 			for each (var opt:Opcao in opcoes) pos += opt.height;
@@ -184,8 +186,16 @@ package
 		}
 		
 		public function hide():void {
-				var xx:int = (posicao == POS_DIREITA?stage.stageWidth + 10:this.largura - 10);		
+				var xx:int = (posicao == POS_DIREITA?stage.stageWidth + 10:-this.largura - 10);		
 				Actuate.tween(this, 0.5, { x:xx } ).onComplete(afterHideThis);
+		}
+		
+		public function localizarOpcao(texto:String):Opcao 
+		{
+			for each(var o:Opcao in opcoes) {
+				if (o.texto == texto) return o;
+			}
+			return null;
 		}
 		
 		private function afterHideThis():void 

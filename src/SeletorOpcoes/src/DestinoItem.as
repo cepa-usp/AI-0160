@@ -4,6 +4,7 @@ package
 	import flash.display.Sprite;
 	import flash.events.MouseEvent;
 	import flash.text.TextField;
+	import flash.text.TextFormat;
 	
 	/**
 	 * ...
@@ -15,7 +16,7 @@ package
 		private var tx:TextField = new TextField();
 		private var margem:int = 5;
 		private var _altura:int = 15;
-		private var _largura:int = 50;
+		private var _largura:int = 50;		
 		
 		private var btFechar:BtFechar = new BtFechar();
 		private var container:DestinoOpcoes;
@@ -41,6 +42,12 @@ package
 			
 		}
 		
+		public function setTextFormat(txf:TextFormat):void {
+			tx.setTextFormat(txf);
+			tx.defaultTextFormat = txf;
+			tx.text = (tx.text + "");
+		}
+	
 		private function onMouseClick(e:MouseEvent):void 
 		{
 			container.removeItem(this)
