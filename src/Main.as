@@ -3,6 +3,7 @@
 	import BaseAssets.BaseMain;
 	import BaseAssets.events.BaseEvent;
 	import BaseAssets.tutorial.CaixaTexto;
+	import com.adobe.protocols.dict.DictionaryServer;
 	import com.adobe.serialization.json.JSON;
 	import cepa.utils.ToolTip;
 	import com.eclecticdesignstudio.motion.Actuate;
@@ -25,10 +26,17 @@
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import flash.net.URLRequest;
+	import flash.text.TextFormat;
+	import flash.utils.Dictionary;
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
 	import flash.utils.Timer;
+	import memorphic.xpath.XPathQuery;
 	import pipwerks.SCORM;
+	import seletor.Conteudo;
+	import seletor.DestinoOpcoes;
+	import seletor.ListaOpcoes;
+	import seletor.Opcao;
 	
 	/**
 	 * ...
@@ -44,22 +52,119 @@
 		private var currentTela:MovieClip;
 		private var nCamadas:int = 14;
 		private var telaAtual:int;
+		private var vetorDestinos:Vector.<DestinoOpcoes> = new Vector.<DestinoOpcoes>();
+		private var c:Conteudo;
+		private var dictTelas:Dictionary;
 		
 		override protected function init():void 
 		{
 			criaConexoes();
+			c = new Conteudo("divcel.xml", criarTelas);
 			criaRespostas();
-			stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
+			//stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
 			
 			//player.source = "http://cepa.if.usp.br/ivan/teste_streaming/Teste.flv";
 			player.source = "http://repz.kinghost.net/testes/mitoseemeiose2.flv";
 			player.playWhenEnoughDownloaded();
 			player.addEventListener(MetadataEvent.CUE_POINT, cuePointListener);
-			player.addEventListener(VideoEvent.PLAYING_STATE_ENTERED, playAgain);
-			player.addEventListener(VideoEvent.SCRUB_START, playAgain);
+			player.addEventListener(VideoEvent.PLAYING_STATE_ENTERED, onPlay);
+			player.addEventListener(VideoEvent.PLAYING_STATE_ENTERED, criaCuePointMarkers);
+			player.addEventListener(VideoEvent.SCRUB_START, onScrub);
 			//player.addEventListener(VideoEvent.BUFFERING_STATE_ENTERED, testeCue);
 			
-			Actuate.timer(1).onComplete(testeCue);
+			//Actuate.timer(1).onComplete(criaCuePointMarkers);
+		}
+		
+		private function onScrub(e:VideoEvent):void 
+		{
+			trace("onScrub");
+			if (currentTela != null) removeTela();
+			mudaTela();
+		}
+		
+		private function mudaTela():void 
+		{
+			if (telaParaSelecionar > -1) {
+				if (currentTela != null) removeTela();
+				if(cuePointsStop.selected){
+					player.pause();				
+					selecionaTela(telaParaSelecionar);
+				}
+				telaParaSelecionar = -1;
+			} 
+			
+		}
+		
+		private function onPlay(e:VideoEvent):void 
+		{
+			removeTela();
+		}
+		
+		public function criarTelas():void {
+			listaFases = new ListaOpcoes(c);
+			listaDetalhes = new ListaOpcoes(c);
+			listaDna = new ListaOpcoes(c);			
+
+			
+			listaFases.definirConteudo("data/etapa[@id='meiose']/fase", "nome");
+			listaDetalhes.definirConteudo("data/etapa[@id='meiose']/fase/label", "");
+			listaDna.definirConteudo("data/etapa[@id='meiose']/fase/dna", "");
+
+			dictTelas = new Dictionary();
+			var txformatTitulo:TextFormat = new TextFormat("arial", 15, 0x400000, true); // foprmato dos titulos
+			var txformatDNA:TextFormat = new TextFormat("arial", 19, 0x400000, true); // foprmato dos dna
+			
+			for (var i:int = 1; i <= nCamadas; i++) {
+				var classe:Class = Class(getDefinitionByName("CamadaTexto" + String(i)));
+				var tela:MovieClip = new classe();
+				tela.x = rect.width / 2;
+				tela.y = rect.height / 2;
+				layerAtividade.addChild(tela);				
+				tela.visible = false;
+				
+				dictTelas[i] = tela;
+
+				var d1:DestinoOpcoes = criarDestinoOpcoes(listaFases, tela.m1, txformatTitulo)
+				d1.definirEscopoValido("data/etapa/fase[@etapa='" + i.toString() + "']", "nome");
+				var d2:DestinoOpcoes = criarDestinoOpcoes(listaDetalhes, tela.m2, null, ListaOpcoes.POS_ESQUERDA)
+				d2.definirEscopoValido("data/etapa/fase[@etapa='" + i.toString() + "']/label", "");			
+				var d3:DestinoOpcoes = criarDestinoOpcoes(listaDna, tela.m3, txformatDNA)
+				d3.definirEscopoValido("data/etapa/fase[@etapa='" + i.toString() + "']/dna", "");				
+				vetorDestinos.push(d1, d2, d3);
+			}	
+			
+			listaFases.posicao = ListaOpcoes.POS_DIREITA;
+			layerAtividade.addChild(listaFases)
+			listaDetalhes.posicao = ListaOpcoes.POS_DIREITA;
+			layerAtividade.addChild(listaDetalhes)			
+			listaDna.posicao = ListaOpcoes.POS_DIREITA;
+			layerAtividade.addChild(listaDna)		
+			stage.addEventListener(MouseEvent.CLICK, removerListas);
+			
+		}
+		
+		private function removerListas(e:MouseEvent):void 
+		{
+			if (e.target is DestinoOpcoes) return;
+			if (e.target is Opcao) return;
+			
+			trace(e.target, e.target.name);
+			for each (var d:DestinoOpcoes in vetorDestinos) d.removeFoco();
+			if (ListaOpcoes.listaOpcaoAtiva != null) {
+				ListaOpcoes.listaOpcaoAtiva.hide();
+			}
+		}
+		
+		public function criarDestinoOpcoes(listabase:ListaOpcoes, marcador:MovieClip, txformat:TextFormat=null, posicaodalista:int=ListaOpcoes.POS_DIREITA):DestinoOpcoes {
+			var d:DestinoOpcoes = new DestinoOpcoes(listabase);
+			d.txformat = txformat;
+			//d.posicaoLista = ??
+			d.x = -d.width / 2;
+			d.y = -d.height / 2;
+			d.posicao = posicaodalista;
+			marcador.addChild(d);
+			return d;
+			
 		}
 		
 		private function criaConexoes():void 
@@ -80,8 +185,10 @@
 			}
 		}
 		
-		private function testeCue(e:VideoEvent = null):void 
+		private function criaCuePointMarkers(e:VideoEvent):void 
 		{
+			player.removeEventListener(VideoEvent.PLAYING_STATE_ENTERED, criaCuePointMarkers);
+			
 			var obj:Object;
 			var time:Number;
 			var totalTime:Number = player.totalTime;
@@ -104,45 +211,38 @@
 			}
 		}
 		
-		private function cuePointClick(e:MouseEvent):void 
+		private function removeTela():void
 		{
-			var cP:CuePointMarker = CuePointMarker(e.target);
-			telaAtual = cuePoints.indexOf(cP) + 1;
-			var obj:Object = player.findCuePoint( { name:String(telaAtual) } );
-			
-			player.seek(obj.time);
-			if(cuePointsStop.selected){
-				player.pause();
-				
-				selecionaTela(telaAtual);
-			}else {
-				if (currentTela != null) {
-					layerAtividade.removeChild(currentTela);
-					currentTela = null;
-				}
+			if (currentTela != null) {
+				currentTela.visible = false;
+				currentTela = null;
 			}
 		}
 		
-		private function keyUpHandler(e:KeyboardEvent):void 
+		private function cuePointClick(e:MouseEvent):void 
 		{
-			if (e.target.name == "texto") {
-				var posTela:int = int(e.target.parent.name.replace("m", ""));
-				
-				var caixas:Array = respostas[telaAtual].caixasTexto;
-				var textos:Array = respostas[telaAtual].textos;
-				var index:int = caixas.indexOf(e.target.parent.name);
-				if (index == -1) {
-					caixas.push(e.target.parent.name);
-					textos.push(e.target.text);
-				}else {
-					textos[index] = e.target.text;
-				}
+			//removeTela();
+			
+			var cP:CuePointMarker = CuePointMarker(e.target);
+			var t:int = cuePoints.indexOf(cP) + 1;
+			var obj:Object = player.findCuePoint( { name:String(t) } );
+			
+			telaParaSelecionar = t;
+			if (cuePointsStop.selected) {
+				player.pause();
+				player.seek(obj.time);
+			}else{
+				player.seek(obj.time);
 			}
+			
+			
+			mudaTela();//player.playheadTime
+			
+
 		}
 		
 		private var posYMark:Number = 516;
 		private var cuePoints:Array = [];
-		
 		
 		/**
 		 * Função que recebe os eventos de cue points
@@ -151,7 +251,6 @@
 		private function cuePointListener(e:MetadataEvent):void 
 		{
 			if (cuePointsStop.selected == false) return;
-			
 			
 			player.pause();
 			//player.seek(e.info.time);
@@ -162,44 +261,10 @@
 		
 		private function selecionaTela(telaAtual:int):void 
 		{
-			if (currentTela != null) {
-				layerAtividade.removeChild(currentTela);
-				currentTela = null;
-			}
+			removeTela();
 			
-			var classe:Class = Class(getDefinitionByName("CamadaTexto" + String(telaAtual)));
-			currentTela = new classe();
-			currentTela.x = rect.width / 2;
-			currentTela.y = rect.height / 2;
-			layerAtividade.addChild(currentTela);
-			
-			recuepraTela(currentTela);
-		}
-		
-		private function recuepraTela(tela:MovieClip):void 
-		{
-			if (respostas[telaAtual].caixasTexto.length > 0) {
-				var caixas:Array = respostas[telaAtual].caixasTexto;
-				var textos:Array = respostas[telaAtual].textos;
-				
-				for (var i:int = 0; i < caixas.length; i++) 
-				{
-					currentTela[caixas[i]].texto.text = textos[i];
-				}
-			}
-			
-		}
-		
-		private function playAgain(e:VideoEvent):void 
-		{
-			if(currentTela != null){
-				if (respostaCerta()) cuePoints[telaAtual - 1].gotoAndStop(2);
-				else cuePoints[currentTela].gotoAndStop(1);
-
-				layerAtividade.removeChild(currentTela);
-				currentTela = null;
-				//player.play();
-			}
+			currentTela = dictTelas[telaAtual];
+			currentTela.visible = true;
 		}
 		
 		private function respostaCerta():Boolean 
@@ -283,6 +348,10 @@
 		private var score:int = 0;
 		private var pingTimer:Timer;
 		private var mementoSerialized:String = "";
+		private var listaFases:ListaOpcoes;
+		private var listaDetalhes:ListaOpcoes;
+		private var listaDna:ListaOpcoes;
+		private var telaParaSelecionar:int = -1;
 		
 		/**
 		 * @private

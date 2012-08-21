@@ -52,6 +52,8 @@
   <libraryPaths>
     <element path="src\lib\as3corelib.swc" />
     <element path="src\lib\Botoes.swc" />
+    <element path="src\lib\xpath-as3-1.0.0.swc" />
+    <element path="src\lib\arte.swc" />
   </libraryPaths>
   <!-- External Libraries -->
   <externalLibraryPaths>
