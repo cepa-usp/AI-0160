@@ -42,7 +42,7 @@
 		private var respostas:Object;
 		private var camadasTexto:Vector.<MovieClip> = new Vector.<MovieClip>();
 		private var currentTela:MovieClip;
-		private var nCamadas:int = 8;
+		private var nCamadas:int = 14;
 		private var telaAtual:int;
 		
 		override protected function init():void 
@@ -51,15 +51,12 @@
 			criaRespostas();
 			stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
 			
-			continua.mouseEnabled = false;
-			continua.filters = [GRAYSCALE_FILTER];
-			block.visible = false;
-			continua.addEventListener(MouseEvent.CLICK, playAgain);
-			
 			//player.source = "http://cepa.if.usp.br/ivan/teste_streaming/Teste.flv";
-			player.source = "http://repz.kinghost.net/testes/Teste4.flv";
+			player.source = "http://repz.kinghost.net/testes/mitoseemeiose2.flv";
 			player.playWhenEnoughDownloaded();
 			player.addEventListener(MetadataEvent.CUE_POINT, cuePointListener);
+			player.addEventListener(VideoEvent.PLAYING_STATE_ENTERED, playAgain);
+			player.addEventListener(VideoEvent.SCRUB_START, playAgain);
 			//player.addEventListener(VideoEvent.BUFFERING_STATE_ENTERED, testeCue);
 			
 			Actuate.timer(1).onComplete(testeCue);
@@ -69,7 +66,6 @@
 		{
 			player = _player;
 			layerAtividade.addChild(player);
-			layerAtividade.addChild(block);
 		}
 		
 		private function criaRespostas():void 
@@ -123,9 +119,6 @@
 				if (currentTela != null) {
 					layerAtividade.removeChild(currentTela);
 					currentTela = null;
-					continua.mouseEnabled = false;
-					continua.filters = [GRAYSCALE_FILTER];
-					block.visible = false;
 				}
 			}
 		}
@@ -159,8 +152,9 @@
 		{
 			if (cuePointsStop.selected == false) return;
 			
-			player.seek(e.info.time);
+			
 			player.pause();
+			//player.seek(e.info.time);
 			telaAtual = int(e.info.name);
 			
 			selecionaTela(telaAtual);
@@ -173,9 +167,6 @@
 				currentTela = null;
 			}
 			
-			block.visible = true;
-			continua.mouseEnabled = true;
-			continua.filters = [];
 			var classe:Class = Class(getDefinitionByName("CamadaTexto" + String(telaAtual)));
 			currentTela = new classe();
 			currentTela.x = rect.width / 2;
@@ -199,16 +190,16 @@
 			
 		}
 		
-		private function playAgain(e:MouseEvent):void 
+		private function playAgain(e:VideoEvent):void 
 		{
-			if (respostaCerta()) cuePoints[telaAtual - 1].gotoAndStop(2);
-			else cuePoints[currentTela].gotoAndStop(1);
-			block.visible = false;
-			continua.mouseEnabled = false;
-			continua.filters = [GRAYSCALE_FILTER];
-			layerAtividade.removeChild(currentTela);
-			currentTela = null;
-			player.play();
+			if(currentTela != null){
+				if (respostaCerta()) cuePoints[telaAtual - 1].gotoAndStop(2);
+				else cuePoints[currentTela].gotoAndStop(1);
+
+				layerAtividade.removeChild(currentTela);
+				currentTela = null;
+				//player.play();
+			}
 		}
 		
 		private function respostaCerta():Boolean 
