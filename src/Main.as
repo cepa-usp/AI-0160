@@ -108,6 +108,23 @@
 			}
 		}
 		
+		private function recoverCuePointsFrame():void
+		{
+			var tela:MovieClip;
+			for (var i:int = 1; i <= nCamadas; i++) 
+			{
+				tela = dictTelas[i];
+				if (DestinoOpcoes(tela.m1.getChildByName("d1")).avaliar() == 100 &&
+					DestinoOpcoes(tela.m2.getChildByName("d2")).avaliar() == 100 &&
+					DestinoOpcoes(tela.m3.getChildByName("d3")).avaliar() == 100) 
+				{
+					cuePoints[i - 1].gotoAndStop(2);
+				}else {
+					cuePoints[i - 1].gotoAndStop(1);
+				}
+			}
+		}
+		
 		private function backToNormal(tela:int):void 
 		{
 			Actuate.effects(cuePoints[telaAtual - 1], 1).filter(0, { alpha: 0 } );
@@ -648,6 +665,8 @@
 				vetorDestinos[i].loadData(dest);
 			}
 			score = calculaScore();
+			
+			recoverCuePointsFrame();
 		}
 		
 	}
