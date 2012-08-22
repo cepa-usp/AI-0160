@@ -56,6 +56,8 @@
 		private var vetorDestinos:Vector.<DestinoOpcoes> = new Vector.<DestinoOpcoes>();
 		private var c:Conteudo;
 		private var dictTelas:Dictionary;
+		private var xmlLoaded:Boolean = false;
+		private var videoReady:Boolean = false;
 		
 		override protected function init():void 
 		{
@@ -181,10 +183,8 @@
 			layerAtividade.addChild(listaDna)		
 			stage.addEventListener(MouseEvent.CLICK, removerListas);
 			
-			if (mementoSerialized != null) {
-				if (mementoSerialized != "" && mementoSerialized != "null") recoverStatus();
-			}
-			
+			xmlLoaded = true;
+			recoverAfterReady();
 		}
 		
 
@@ -262,6 +262,20 @@
 			}
 			
 			player.addASCuePoint(mitoseTime, "mudaFase");
+			
+			videoReady = true;
+			recoverAfterReady();
+		}
+		
+		private function recoverAfterReady():void
+		{
+			if(xmlLoaded && videoReady){
+				if (mementoSerialized != null) {
+					if (mementoSerialized != "" && mementoSerialized != "null") {
+						recoverStatus();
+					}
+				}
+			}
 		}
 		
 		private function removeTela():void
