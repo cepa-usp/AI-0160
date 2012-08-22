@@ -76,12 +76,8 @@
 			//player.addEventListener(VideoEvent.BUFFERING_STATE_ENTERED, testeCue);
 			
 			//Actuate.timer(1).onComplete(criaCuePointMarkers);
-			
 			if (ExternalInterface.available) {
 				initLMSConnection();
-				if (mementoSerialized != null) {
-					if (mementoSerialized != "" && mementoSerialized != "null") recoverStatus();
-				}
 			}
 		}
 		
@@ -184,6 +180,10 @@
 			listaDna.posicao = ListaOpcoes.POS_DIREITA;
 			layerAtividade.addChild(listaDna)		
 			stage.addEventListener(MouseEvent.CLICK, removerListas);
+			
+			if (mementoSerialized != null) {
+				if (mementoSerialized != "" && mementoSerialized != "null") recoverStatus();
+			}
 			
 		}
 		
