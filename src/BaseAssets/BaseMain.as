@@ -159,6 +159,7 @@
 			botoes = new MenuBar(false);
 			//botoes.x = rect.width - botoes.BTN_WIDTH - 12;
 			botoes.y = rect.height - 12;
+			//botoes.y = 52;
 			layerMenu.addChild(botoes);
 			
 			bordaAtividade = new Borda();

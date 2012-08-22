@@ -103,12 +103,14 @@ package  seletor
 		
 		private function onClick(e:MouseEvent):void 
 		{
+				
 				if (selecionado == true) return;
 				qtdeUsada++;
 				if(qtdeUsada==qtde) selecionado = true;
 				var ev:ListaOpcoesEvent = new ListaOpcoesEvent(ListaOpcoesEvent.OPCAO_SELECIONADA, this);
 				listaOpcoes.dispatchEvent(ev);
 		}
+		
 		
 		private function onMouseOver(e:MouseEvent):void 
 		{

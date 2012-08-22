@@ -29,6 +29,7 @@ package  seletor
 			this.addChild(tx);
 			fazBtFechar()
 			tx.text = opcao.texto;
+			tx.mouseEnabled = false;
 			tx.x = margem;			
 			tx.selectable = false;			
 			tx.width = largura - margem;

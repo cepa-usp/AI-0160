@@ -25,6 +25,8 @@
 <resources>
 	<resource identifier="item1_resource" adlcp:scormType="sco" href="index.html" type="webcontent">
     <file href="./index.html"/>
+    <file href="./divcel.xml"/>
+    <file href="./SkinUnderPlaySeekStop.swf"/>
     <file href="./js/ai.js"/>
 	<file href="./js/jquery-1.4.2.min.js"/>
 	<file href="./js/jquery-parsequery.min.js"/>

@@ -27,7 +27,7 @@
 		<fase etapa="6" nome="Prófase II">
 			<dna>2c</dna>
 			<label>Desaparecimento da carioteca</label>		
-			<label>Pareamento dos crmossomos homólogos</label>					
+			<label>Pareamento dos cromossomos homólogos</label>					
 		</fase>
 		<fase etapa="7" nome="Metáfase II">
 			<dna>2c</dna>

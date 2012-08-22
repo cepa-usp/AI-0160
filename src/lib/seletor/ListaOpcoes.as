@@ -42,6 +42,10 @@ package  seletor
 			layerOpcoes.mask = mascara;
 		}
 		
+		
+		public function getOpcaoByName(name:String):Opcao {
+			return dicOpcoes[name];
+		}
 		public function ListaOpcoes(conteudoXML:Conteudo) 
 		{
 			this.conteudo = conteudoXML;
@@ -65,6 +69,9 @@ package  seletor
 				}
 				
 			}
+			
+			embaralhar();
+			criarOpcoesVisual();
 			//trace(result)
 			
 		}
@@ -91,6 +98,18 @@ package  seletor
 			
 		}
 		
+		public function embaralhar():void {
+			
+			this.opcoes = this.opcoes.sort(shuffle);
+			
+		}
+		
+		private function shuffle(originalArray,shuffledArray):int
+		{
+			var sortNum : int = Math.round(Math.random() * 2) - 1;
+			return sortNum;
+		}		
+		
 	
 		public function adicionarOpcao(tx:String):Opcao {
 			if (dicOpcoes[tx] != null) {
@@ -100,15 +119,23 @@ package  seletor
 			var o:Opcao = new Opcao(this, tx);
 			o.qtde = 1;
 			o.qtdeUsada = 0;
-			var pos:int = 0;
+			
 			dicOpcoes[tx] = o;
-			for each (var opt:Opcao in opcoes) pos += opt.height;
 			opcoes.push(o);
-			layerOpcoes.addChild(o);
-			o.x = 0;
-			o.y = pos;
+			
+
 			
 			return o;
+		}
+		
+		public function criarOpcoesVisual() {
+			var pos:int = 0;
+			for each (var item:Opcao in opcoes) {				
+				item.x = 0;
+				item.y = pos;				
+				pos += item.height;
+				layerOpcoes.addChild(item);
+			}
 		}
 		
 		public function get posicao():int 
@@ -180,7 +207,7 @@ package  seletor
 				} else {
 					this.x = 0 - this.largura - 10;
 				}
-				var xx:int = (pos == POS_DIREITA?this.stage.stageWidth - this.largura - 10:10);
+				var xx:int = (pos == POS_DIREITA?this.stage.stageWidth - this.largura - 30:30);
 				Actuate.tween(this, 0.5, { x:xx } ).onComplete(setThisActive);
 		}
 		

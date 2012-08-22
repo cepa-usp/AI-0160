@@ -34,6 +34,7 @@
 	import memorphic.xpath.XPathQuery;
 	import pipwerks.SCORM;
 	import seletor.Conteudo;
+	import seletor.DestinoItem;
 	import seletor.DestinoOpcoes;
 	import seletor.ListaOpcoes;
 	import seletor.Opcao;
@@ -62,22 +63,56 @@
 			c = new Conteudo("divcel.xml", criarTelas);
 			criaRespostas();
 			//stage.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
+			fase.text = "Meiose";
 			
-			//player.source = "http://cepa.if.usp.br/ivan/teste_streaming/Teste.flv";
-			player.source = "http://repz.kinghost.net/testes/mitoseemeiose2.flv";
+			player.source = "http://midia.atp.usp.br/atividades-interativas/AI-0160/video/mitoseemeiose.flv";
+			//player.source = "http://repz.kinghost.net/testes/mitoseemeiose2.flv";
 			player.playWhenEnoughDownloaded();
 			player.addEventListener(MetadataEvent.CUE_POINT, cuePointListener);
 			player.addEventListener(VideoEvent.PLAYING_STATE_ENTERED, onPlay);
 			player.addEventListener(VideoEvent.PLAYING_STATE_ENTERED, criaCuePointMarkers);
 			player.addEventListener(VideoEvent.SCRUB_START, onScrub);
+			player.addEventListener(VideoEvent.SCRUB_FINISH, onScrubFinish);
 			//player.addEventListener(VideoEvent.BUFFERING_STATE_ENTERED, testeCue);
 			
 			//Actuate.timer(1).onComplete(criaCuePointMarkers);
+			
+			if (ExternalInterface.available) {
+				initLMSConnection();
+				if (mementoSerialized != null) {
+					if (mementoSerialized != "" && mementoSerialized != "null") recoverStatus();
+				}
+			}
+		}
+		
+		private function mudaMarcadorCuePoint(e:Event):void 
+		{
+			if(currentTela != null){
+				if (DestinoOpcoes(currentTela.m1.getChildByName("d1")).avaliar() == 100 &&
+					DestinoOpcoes(currentTela.m2.getChildByName("d2")).avaliar() == 100 &&
+					DestinoOpcoes(currentTela.m3.getChildByName("d3")).avaliar() == 100) 
+				{
+					cuePoints[telaAtual - 1].gotoAndStop(2);
+					Actuate.effects(cuePoints[telaAtual - 1], 1).filter(0, { alpha: 1 } ).onComplete(backToNormal, telaAtual);
+				}else {
+					cuePoints[telaAtual - 1].gotoAndStop(1);
+				}
+				saveStatus();
+			}
+		}
+		
+		private function backToNormal(tela:int):void 
+		{
+			Actuate.effects(cuePoints[telaAtual - 1], 1).filter(0, { alpha: 0 } );
+		}
+		
+		private function onScrubFinish(e:VideoEvent):void 
+		{
+			verificaFase();
 		}
 		
 		private function onScrub(e:VideoEvent):void 
 		{
-			trace("onScrub");
 			if (currentTela != null) removeTela();
 			mudaTela();
 		}
@@ -98,6 +133,7 @@
 		private function onPlay(e:VideoEvent):void 
 		{
 			removeTela();
+			verificaFase();
 		}
 		
 		public function criarTelas():void {
@@ -112,6 +148,7 @@
 
 			dictTelas = new Dictionary();
 			var txformatTitulo:TextFormat = new TextFormat("arial", 15, 0x400000, true); // foprmato dos titulos
+			var txformatLabels:TextFormat = new TextFormat("arial", 11, 0x400000, true); // foprmato dos titulos
 			var txformatDNA:TextFormat = new TextFormat("arial", 19, 0x400000, true); // foprmato dos dna
 			
 			for (var i:int = 1; i <= nCamadas; i++) {
@@ -125,16 +162,23 @@
 				dictTelas[i] = tela;
 
 				var d1:DestinoOpcoes = criarDestinoOpcoes(listaFases, tela.m1, txformatTitulo)
+				d1.name = "d1";
 				d1.definirEscopoValido("data/etapa/fase[@etapa='" + i.toString() + "']", "nome");
-				var d2:DestinoOpcoes = criarDestinoOpcoes(listaDetalhes, tela.m2, null, ListaOpcoes.POS_ESQUERDA)
+				d1.addEventListener("valorAlterado", mudaMarcadorCuePoint);
+				var d2:DestinoOpcoes = criarDestinoOpcoes(listaDetalhes, tela.m2, txformatLabels, ListaOpcoes.POS_ESQUERDA)
+				d2.name = "d2";
 				d2.definirEscopoValido("data/etapa/fase[@etapa='" + i.toString() + "']/label", "");			
+				d2.addEventListener("valorAlterado", mudaMarcadorCuePoint);
 				var d3:DestinoOpcoes = criarDestinoOpcoes(listaDna, tela.m3, txformatDNA)
+				d3.name = "d3";
 				d3.definirEscopoValido("data/etapa/fase[@etapa='" + i.toString() + "']/dna", "");				
+				d3.addEventListener("valorAlterado", mudaMarcadorCuePoint);
 				vetorDestinos.push(d1, d2, d3);
 			}	
 			
 			listaFases.posicao = ListaOpcoes.POS_DIREITA;
 			layerAtividade.addChild(listaFases)
+			
 			listaDetalhes.posicao = ListaOpcoes.POS_DIREITA;
 			layerAtividade.addChild(listaDetalhes)			
 			listaDna.posicao = ListaOpcoes.POS_DIREITA;
@@ -143,12 +187,16 @@
 			
 		}
 		
+
+		
 		private function removerListas(e:MouseEvent):void 
 		{
 			if (e.target is DestinoOpcoes) return;
+			if (e.target is DestinoItem) return;
 			if (e.target is Opcao) return;
+			if (e.target is BtFechar) return;
 			
-			trace(e.target, e.target.name);
+			//trace(e.target, e.target.name);
 			for each (var d:DestinoOpcoes in vetorDestinos) d.removeFoco();
 			if (ListaOpcoes.listaOpcaoAtiva != null) {
 				ListaOpcoes.listaOpcaoAtiva.hide();
@@ -159,7 +207,7 @@
 			var d:DestinoOpcoes = new DestinoOpcoes(listabase);
 			d.txformat = txformat;
 			//d.posicaoLista = ??
-			d.x = -d.width / 2;
+			d.x = -d.largura / 2;
 			d.y = -d.height / 2;
 			d.posicao = posicaodalista;
 			marcador.addChild(d);
@@ -171,6 +219,8 @@
 		{
 			player = _player;
 			layerAtividade.addChild(player);
+			//player.playheadUpdateInterval = 20;
+			//trace(player.playheadUpdateInterval);
 		}
 		
 		private function criaRespostas():void 
@@ -202,6 +252,7 @@
 				posX = player.x + player.seekBar.x + (time / totalTime * player.seekBar.width);
 				
 				var cuePoint:CuePointMarker = new CuePointMarker();
+				cuePoint.filters = [new GlowFilter(0x00FF00, 0, 10, 10, 3, 3)];
 				cuePoint.x = posX;
 				cuePoint.y = posYMark;
 				cuePoint.addEventListener(MouseEvent.CLICK, cuePointClick);
@@ -209,11 +260,16 @@
 				cuePoints.push(cuePoint);
 				layerAtividade.addChild(cuePoint);
 			}
+			
+			player.addASCuePoint(mitoseTime, "mudaFase");
 		}
 		
 		private function removeTela():void
 		{
 			if (currentTela != null) {
+				
+				//mudaMarcadorCuePoint(null);
+				
 				currentTela.visible = false;
 				currentTela = null;
 			}
@@ -226,22 +282,32 @@
 			var cP:CuePointMarker = CuePointMarker(e.target);
 			var t:int = cuePoints.indexOf(cP) + 1;
 			var obj:Object = player.findCuePoint( { name:String(t) } );
-			
 			telaParaSelecionar = t;
 			if (cuePointsStop.selected) {
 				player.pause();
-				player.seek(obj.time);
+				player.playheadTime = obj.time;
+				//player.seek(obj.time);
 			}else{
 				player.seek(obj.time);
 			}
 			
 			
 			mudaTela();//player.playheadTime
+			verificaFase();
 			
-
 		}
 		
-		private var posYMark:Number = 516;
+		private var mitoseTime:Number = 145;
+		private function verificaFase():void
+		{
+			if (player.playheadTime > mitoseTime) {
+				fase.text = "Mitose";
+			}else {
+				fase.text = "Meiose";
+			}
+		}
+		
+		private var posYMark:Number = 524;
 		private var cuePoints:Array = [];
 		
 		/**
@@ -250,19 +316,23 @@
 		 */
 		private function cuePointListener(e:MetadataEvent):void 
 		{
-			if (cuePointsStop.selected == false) return;
-			
-			player.pause();
-			//player.seek(e.info.time);
-			telaAtual = int(e.info.name);
-			
-			selecionaTela(telaAtual);
+			if (e.info.name == "mudaFase") {
+				fase.text = "Mitose";
+			}else{
+				if (cuePointsStop.selected == false) return;
+				
+				player.pause();
+				//player.seek(e.info.time - 0.5);
+				telaAtual = int(e.info.name);
+				
+				selecionaTela(telaAtual);
+			}
 		}
 		
 		private function selecionaTela(telaAtual:int):void 
 		{
 			removeTela();
-			
+			this.telaAtual = telaAtual;
 			currentTela = dictTelas[telaAtual];
 			currentTela.visible = true;
 		}
@@ -274,7 +344,11 @@
 		
 		override public function reset(e:MouseEvent = null):void
 		{
-			
+			for each (var item:DestinoOpcoes in vetorDestinos) 
+			{
+				item.reset();
+			}
+			score = 0;
 		}
 		
 		
@@ -329,6 +403,15 @@
 			}
 		}
 		
+		public function calculaScore():int {
+			var total:Number = 0;
+			for each (var item:DestinoOpcoes in vetorDestinos) {
+				total += item.avaliar()				
+			}
+			total /= vetorDestinos.length;
+			return Math.round(total);
+		}
+		
 		private function iniciaAi(e:BaseEvent):void 
 		{
 			balao.removeEventListener(BaseEvent.CLOSE_BALAO, iniciaAi);
@@ -363,8 +446,8 @@
 			connected = false;
 			scorm = new SCORM();
 			
-			pingTimer = new Timer(PING_INTERVAL);
-			pingTimer.addEventListener(TimerEvent.TIMER, pingLMS);
+			//pingTimer = new Timer(PING_INTERVAL);
+			//pingTimer.addEventListener(TimerEvent.TIMER, pingLMS);
 			
 			connected = scorm.connect();
 			
@@ -409,7 +492,7 @@
 				if (success)
 				{
 					scorm.save();
-					pingTimer.start();
+					//pingTimer.start();
 				}
 				else
 				{
@@ -480,18 +563,54 @@
 		private function saveStatus(e:Event = null):void
 		{
 			if (ExternalInterface.available) {
+				saveStatusForRecovery();
 				if (connected) {
-					
 					if (scorm.get("cmi.mode" != "normal")) return;
-					
-					//saveStatusForRecovery();
 					scorm.set("cmi.suspend_data", mementoSerialized);
 					commit();
 				}else {//LocalStorage
-					//saveStatusForRecovery();
 					ExternalInterface.call("save2LS", mementoSerialized);
 				}
 			}
+		}
+		
+		private function saveStatusForRecovery():void 
+		{
+			score = calculaScore();
+			
+			var destinos:Object  = { };
+			destinos.qtde = vetorDestinos.length;
+			var i:int = 0;
+			var comp:Boolean = true;
+			for each (var item:DestinoOpcoes in vetorDestinos) 
+			{
+				destinos[i.toString()] = item.saveData();
+				if (item.opcoes.length == 0) comp = false;
+				i++;
+			}
+			
+			if (!completed) {
+				completed = comp;
+			}
+			
+			var obj:Object = { };
+			obj.destinos = destinos;
+			var s:String = JSON.encode(obj);
+			
+			mementoSerialized = s;
+		}
+		
+		private function recoverStatus():void
+		{
+			var obj:Object = JSON.decode(mementoSerialized);
+			var destinos:Object = obj.destinos;
+			var qtde:int = destinos.qtde;
+			
+			for (var i:int = 0; i < qtde; i++) {
+				var dest:Object = destinos[i.toString()];
+				vetorDestinos[i].loadData(dest);
+			}
+			score = calculaScore();
 		}
 		
 	}
