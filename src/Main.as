@@ -58,6 +58,15 @@
 		private var dictTelas:Dictionary;
 		private var xmlLoaded:Boolean = false;
 		private var videoReady:Boolean = false;
+		private var listaFasesMeiose:ListaOpcoes;
+		private var listaDetalhesMeiose:ListaOpcoes;
+		private var listaDnaMeiose:ListaOpcoes;
+
+		private var listaFasesMitose:ListaOpcoes;
+		private var listaDetalhesMitose:ListaOpcoes;
+		private var listaDnaMitose:ListaOpcoes;
+		
+		private var telaParaSelecionar:int = -1;
 		
 		override protected function init():void 
 		{
@@ -135,14 +144,23 @@
 		}
 		
 		public function criarTelas():void {
-			listaFases = new ListaOpcoes(c);
-			listaDetalhes = new ListaOpcoes(c);
-			listaDna = new ListaOpcoes(c);			
+			listaFasesMeiose = new ListaOpcoes(c);
+			listaDetalhesMeiose = new ListaOpcoes(c);
+			listaDnaMeiose = new ListaOpcoes(c);			
+
+			listaFasesMitose = new ListaOpcoes(c);
+			listaDetalhesMitose= new ListaOpcoes(c);
+			listaDnaMitose = new ListaOpcoes(c);			
 
 			
-			listaFases.definirConteudo("data/etapa[@id='meiose']/fase", "nome");
-			listaDetalhes.definirConteudo("data/etapa[@id='meiose']/fase/label", "");
-			listaDna.definirConteudo("data/etapa[@id='meiose']/fase/dna", "");
+			listaFasesMeiose.definirConteudo("data/etapa[@id='meiose']/fase", "nome");
+			listaDetalhesMeiose.definirConteudo("data/etapa[@id='meiose']/fase/label", "");
+			listaDnaMeiose.definirConteudo("data/etapa[@id='meiose']/fase/dna", "");
+
+			listaFasesMitose.definirConteudo("data/etapa[@id='mitose']/fase", "nome");
+			listaDetalhesMitose.definirConteudo("data/etapa[@id='mitose']/fase/label", "");
+			listaDnaMitose.definirConteudo("data/etapa[@id='mitose']/fase/dna", "");			
+			
 
 			dictTelas = new Dictionary();
 			var txformatTitulo:TextFormat = new TextFormat("arial", 15, 0x400000, true); // foprmato dos titulos
@@ -158,29 +176,37 @@
 				tela.visible = false;
 				
 				dictTelas[i] = tela;
-
-				var d1:DestinoOpcoes = criarDestinoOpcoes(listaFases, tela.m1, txformatTitulo)
+				
+				var d1:DestinoOpcoes = criarDestinoOpcoes((i <= 9 ?listaFasesMeiose: listaFasesMitose), tela.m1, txformatTitulo)
 				d1.name = "d1";
 				d1.definirEscopoValido("data/etapa/fase[@etapa='" + i.toString() + "']", "nome");
 				d1.addEventListener("valorAlterado", mudaMarcadorCuePoint);
-				var d2:DestinoOpcoes = criarDestinoOpcoes(listaDetalhes, tela.m2, txformatLabels, ListaOpcoes.POS_ESQUERDA)
+				var d2:DestinoOpcoes = criarDestinoOpcoes((i <= 9 ?listaDetalhesMeiose: listaDetalhesMitose), tela.m2, txformatLabels, ListaOpcoes.POS_ESQUERDA)
 				d2.name = "d2";
 				d2.definirEscopoValido("data/etapa/fase[@etapa='" + i.toString() + "']/label", "");			
 				d2.addEventListener("valorAlterado", mudaMarcadorCuePoint);
-				var d3:DestinoOpcoes = criarDestinoOpcoes(listaDna, tela.m3, txformatDNA)
+				var d3:DestinoOpcoes = criarDestinoOpcoes((i <= 9 ?listaDnaMeiose: listaDnaMitose), tela.m3, txformatDNA)
 				d3.name = "d3";
 				d3.definirEscopoValido("data/etapa/fase[@etapa='" + i.toString() + "']/dna", "");				
 				d3.addEventListener("valorAlterado", mudaMarcadorCuePoint);
 				vetorDestinos.push(d1, d2, d3);
 			}	
 			
-			listaFases.posicao = ListaOpcoes.POS_DIREITA;
-			layerAtividade.addChild(listaFases)
+			listaFasesMeiose.posicao = ListaOpcoes.POS_DIREITA;
+			layerAtividade.addChild(listaFasesMeiose)			
+			listaDetalhesMeiose.posicao = ListaOpcoes.POS_DIREITA;
+			layerAtividade.addChild(listaDetalhesMeiose)			
+			listaDnaMeiose.posicao = ListaOpcoes.POS_DIREITA;
+			layerAtividade.addChild(listaDnaMeiose)		
+
 			
-			listaDetalhes.posicao = ListaOpcoes.POS_DIREITA;
-			layerAtividade.addChild(listaDetalhes)			
-			listaDna.posicao = ListaOpcoes.POS_DIREITA;
-			layerAtividade.addChild(listaDna)		
+			listaFasesMitose.posicao = ListaOpcoes.POS_DIREITA;
+			layerAtividade.addChild(listaFasesMitose)			
+			listaDetalhesMitose.posicao = ListaOpcoes.POS_DIREITA;
+			layerAtividade.addChild(listaDetalhesMitose)			
+			listaDnaMitose.posicao = ListaOpcoes.POS_DIREITA;
+			layerAtividade.addChild(listaDnaMitose)	
+			
 			stage.addEventListener(MouseEvent.CLICK, removerListas);
 			
 			xmlLoaded = true;
@@ -445,10 +471,7 @@
 		private var score:int = 0;
 		private var pingTimer:Timer;
 		private var mementoSerialized:String = "";
-		private var listaFases:ListaOpcoes;
-		private var listaDetalhes:ListaOpcoes;
-		private var listaDna:ListaOpcoes;
-		private var telaParaSelecionar:int = -1;
+
 		
 		/**
 		 * @private
