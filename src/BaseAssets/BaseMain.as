@@ -174,7 +174,7 @@
 			botoes.addButton(new CreditBtn(), openCreditos, "Licença e créditos");
 			botoes.addButton(new ResetBtn(), reset, "Reiniciar");
 			botoes.addButton(new InstructionBtn(), openOrientacoes, "Orientações");
-			botoes.addButton(new InfoBtn(), iniciaTutorial, "Reiniciar tutorial");
+			//botoes.addButton(new InfoBtn(), iniciaTutorial, "Reiniciar tutorial");
 			if (hasStats) botoes.addButton(new BtStats(), openStats, "Desempenho");
 			
 			botoes.x = rect.width - botoes.width - 12;

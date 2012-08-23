@@ -90,6 +90,8 @@
 			if (ExternalInterface.available) {
 				initLMSConnection();
 			}
+			
+			//iniciaTutorial();
 		}
 		
 		private function mudaMarcadorCuePoint(e:Event):void 
@@ -428,14 +430,19 @@
 				balao.visible = false;
 				
 				tutoSequence = ["Veja aqui as orientações.",
-								"Arraste as \"Causas\" e \"Consequências\" para os locais corretos.", 
+								"Ao iniciar o video ...", 
+								"serão apresentadas marcas sobre a barra de tempo do video.",
+								"Cada marca representa uma parado no video.",
+								"Em cada parada aparecerão 3 caixas de texto...",
+								"que deverão ser preenchidas de acordo com a lista de preenchimento de cada campo.",
+								"A lista de preenchimento aparece ao clicar sobre o campo.",
 								"Vecê terá NADA para isso."];
 				
-				pointsTuto = 	[new Point(590, 405),
+				pointsTuto = 	[new Point(560, 555),
 								new Point(315 , 250),
 								new Point(325 , 210)];
 								
-				tutoBaloonPos = [[CaixaTexto.RIGHT, CaixaTexto.FIRST],
+				tutoBaloonPos = [[CaixaTexto.BOTTON, CaixaTexto.LAST],
 								["", ""],
 								["", ""]];
 			}
