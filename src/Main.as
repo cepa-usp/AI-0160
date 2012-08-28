@@ -5,7 +5,6 @@
 	import BaseAssets.tutorial.CaixaTexto;
 	import com.adobe.protocols.dict.DictionaryServer;
 	import com.adobe.serialization.json.JSON;
-	import cepa.utils.ToolTip;
 	import com.eclecticdesignstudio.motion.Actuate;
 	import com.eclecticdesignstudio.motion.easing.Linear;
 	import fl.transitions.easing.None;
@@ -58,6 +57,7 @@
 		private var dictTelas:Dictionary;
 		private var xmlLoaded:Boolean = false;
 		private var videoReady:Boolean = false;
+		private var sprTutorial:Sprite = new Sprite();
 		private var listaFasesMeiose:ListaOpcoes;
 		private var listaDetalhesMeiose:ListaOpcoes;
 		private var listaDnaMeiose:ListaOpcoes;
@@ -77,6 +77,7 @@
 			fase.text = "Meiose";
 			
 			player.source = "http://midia.atp.usp.br/atividades-interativas/AI-0160/video/mitoseemeiose.flv";
+			
 			//player.source = "http://repz.kinghost.net/testes/mitoseemeiose2.flv";
 			player.playWhenEnoughDownloaded();
 			player.addEventListener(MetadataEvent.CUE_POINT, cuePointListener);
@@ -90,8 +91,55 @@
 			if (ExternalInterface.available) {
 				initLMSConnection();
 			}
+			orientacoesScreen.btTutorial.addEventListener(MouseEvent.CLICK, onBtTutorialClick);
 			
+			for each (var bt:Sprite in botoes.buttons) {
+				bt.addEventListener(MouseEvent.CLICK, function() {
+					player.pause();
+				})				
+			}
+				
+			orientacoesScreen.btIniciar.addEventListener(MouseEvent.CLICK, onBtIniciarClick);
+			orientacoesScreen.openScreen();
 			//iniciaTutorial();
+		}
+		
+		private function onBtIniciarClick(e:MouseEvent):void 
+		{
+			player.play();
+			orientacoesScreen.closeScreen(null);
+		}
+		
+		
+		
+		private function onBtTutorialClick(e:MouseEvent):void 
+		{
+			carregarTutorial()
+		}
+		
+		private function carregarTutorial():void 
+		{
+			var tut:TutorialPlayer = new TutorialPlayer();
+			sprTutorial.graphics.clear();
+			sprTutorial.graphics.beginFill(0, 0.8);
+			sprTutorial.graphics.drawRect(0, 0, stage.stageWidth, stage.stageHeight);
+			
+			sprTutorial.addChild(tut.player)
+			tut.player.scaleX = 1.5;
+			tut.player.scaleY = 1.5;
+			tut.player.x = sprTutorial.width / 2 - tut.player.width / 2;
+			tut.player.y = sprTutorial.height / 2 - tut.player.height / 2;
+			
+			sprTutorial.addEventListener(MouseEvent.CLICK, onSprTutorialClick);
+			//sprTutorial.player.seek(0);
+			//sprTutorial.player.play();
+			sprTutorial.visible = true;
+		}
+		
+		private function onSprTutorialClick(e:MouseEvent):void 
+		{			
+			sprTutorial.visible = false;
+			sprTutorial.removeChild(sprTutorial.getChildByName("player"));
 		}
 		
 		private function mudaMarcadorCuePoint(e:Event):void 
@@ -226,6 +274,8 @@
 			listaDnaMitose.posicao = ListaOpcoes.POS_DIREITA;
 			layerAtividade.addChild(listaDnaMitose)	
 			
+			addChild(sprTutorial);
+			
 			stage.addEventListener(MouseEvent.CLICK, removerListas);
 			
 			xmlLoaded = true;
@@ -310,6 +360,7 @@
 			
 			videoReady = true;
 			recoverAfterReady();
+			player.pause();
 		}
 		
 		private function recoverAfterReady():void

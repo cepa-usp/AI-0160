@@ -35,7 +35,7 @@
 		
 		//Telas da atividade:
 		private var creditosScreen:AboutScreen;
-		private var orientacoesScreen:InstScreen;
+		private var _orientacoesScreen:InstScreen;
 		protected var feedbackScreen:FeedBackScreen;
 		protected var statsScreen:StatsScreen;
 		
@@ -146,7 +146,7 @@
 			
 			creditosScreen = new AboutScreen(glassPane);
 			layerDialogo.addChild(creditosScreen);
-			orientacoesScreen = new InstScreen(glassPane);
+			orientacoesScreen = new InstScreen(glassPane);			
 			layerDialogo.addChild(orientacoesScreen);
 			feedbackScreen = new FeedBackScreen(glassPane);
 			layerDialogo.addChild(feedbackScreen);
@@ -264,6 +264,16 @@
 		public function reset(e:MouseEvent = null):void 
 		{
 			
+		}
+		
+		public function get orientacoesScreen():InstScreen 
+		{
+			return _orientacoesScreen;
+		}
+		
+		public function set orientacoesScreen(value:InstScreen):void 
+		{
+			_orientacoesScreen = value;
 		}
 		
 	}

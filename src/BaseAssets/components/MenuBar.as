@@ -1,4 +1,4 @@
-package BaseAssets.components
+﻿package BaseAssets.components
 {
 	import cepa.utils.ToolTip;
 	import com.eclecticdesignstudio.motion.Actuate;
@@ -21,7 +21,7 @@ package BaseAssets.components
 		private var overAnimated:Boolean = true;
 		private var doublInicialFinalBorder:Boolean = true;
 		
-		private var buttons:Vector.<Sprite> = new Vector.<Sprite>();
+		private var _buttons:Vector.<Sprite> = new Vector.<Sprite>();
 		private var background:Sprite;
 		private var vertical:Boolean;
 		
@@ -30,6 +30,8 @@ package BaseAssets.components
 			if (doublInicialFinalBorder) totalHeight = HEIGHT_BORDER;
 			this.vertical = vertical;
 		}
+		
+
 		
 		public function addButton(spr:Sprite, func:Function, descricao:String = null):void
 		{
@@ -108,6 +110,16 @@ package BaseAssets.components
 				item.rotation = -value;
 			}
 			super.rotation = value;
+		}
+		
+		public function get buttons():Vector.<Sprite> 
+		{
+			return _buttons;
+		}
+		
+		public function set buttons(value:Vector.<Sprite>):void 
+		{
+			_buttons = value;
 		}
 		
 	}

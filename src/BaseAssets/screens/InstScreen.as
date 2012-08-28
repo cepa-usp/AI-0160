@@ -37,6 +37,7 @@ package BaseAssets.screens
 			this.scaleX = this.scaleY = 0;
 			this.visible = false;
 			glassPane.alpha = 0;
+			
 		}
 		
 		private function escCloseScreen(e:KeyboardEvent):void 
@@ -46,8 +47,13 @@ package BaseAssets.screens
 			}
 		}
 		
-		private function closeScreen(e:MouseEvent):void 
+		
+		public function closeScreen(e:MouseEvent):void 
 		{
+			
+			if(e!=null){
+				if (e.target != this) return;
+			}
 			Actuate.tween(glassPane, 0.4, { /*scaleX:0, scaleY:0*/alpha:0 } );
 			Actuate.tween(this, 0.4, { scaleX:0, scaleY:0 } ).onComplete(turnInvisible);
 		}
